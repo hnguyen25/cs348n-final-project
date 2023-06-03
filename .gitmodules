@@ -1,0 +1,6 @@
+[submodule "Building-GAN"]
+	path = Building-GAN
+	url = https://github.com/AutodeskAILab/Building-GAN.git
+[submodule "PVD"]
+	path = PVD
+	url = https://github.com/alexzhou907/PVD.git
