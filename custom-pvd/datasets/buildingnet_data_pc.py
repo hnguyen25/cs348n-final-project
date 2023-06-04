@@ -30,6 +30,7 @@ class BuildingNetPC(Dataset):
         data_path = os.path.join(root_dir, category)
         
         for idx, file in enumerate(os.listdir(data_path)):
+       
             if not file.endswith(".npy"):
                 continue
             obj_fname = os.path.join(data_path, file)
@@ -39,7 +40,7 @@ class BuildingNetPC(Dataset):
             except:
                 continue
             ##print("pc shape", point_cloud.shape[0])
-            if point_cloud.shape[0] != 150000:
+            if point_cloud.shape[0] != 15000:
                 continue
             self.all_points.append(point_cloud[np.newaxis, ...])
             
@@ -112,7 +113,7 @@ class BuildingNetPC(Dataset):
 
     def __getitem__(self, idx):
         tr_out = self.train_points[idx]
-        print("tr_out", tr_out.shape)
+        #print("tr_out", tr_out.shape)
         if self.random_subsample:
             tr_idxs = np.random.choice(tr_out.shape[0], self.tr_sample_size)
         else:
@@ -120,7 +121,7 @@ class BuildingNetPC(Dataset):
         tr_out = torch.from_numpy(tr_out[tr_idxs, :]).float()
 
         te_out = self.test_points[idx]
-        print("te_out", te_out.shape)
+        #print("te_out", te_out.shape)
         if self.random_subsample:
             te_idxs = np.random.choice(te_out.shape[0], self.te_sample_size)
         else:
