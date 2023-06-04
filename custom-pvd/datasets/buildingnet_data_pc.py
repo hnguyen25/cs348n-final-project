@@ -30,7 +30,7 @@ class BuildingNetPC(Dataset):
 
         data_path = os.path.join(root_dir, category)
         
-        for idx, file in os.listdir(data_path):
+        for idx, file in os.listdir                                         (data_path):
             if not file.endswith(".npy"):
                 continue
             obj_fname = os.path.join(data_path, file)
