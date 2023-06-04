@@ -8,7 +8,6 @@ import open3d as o3d
 import numpy as np
 import torch.nn.functional as F
 
-
 class BuildingNetPC(Dataset):
     def __init__(self, root_dir, tr_sample_size=10000, category='RESIDENTIALhouse',
                  te_sample_size=10000, split='train', scale=1.,
@@ -36,27 +35,19 @@ class BuildingNetPC(Dataset):
             obj_fname = os.path.join(data_path, file)
         
             try:
-                point_cloud = np.load(obj_fname) # (2048, 3)
+                point_cloud = np.load(obj_fname) # (15000, 3)
             except:
                 continue
             ##print("pc shape", point_cloud.shape[0])
-            if point_cloud.shape[0] != 2048:
-            	continue
+            if point_cloud.shape[0] != 150000:
+                continue
             self.all_points.append(point_cloud[np.newaxis, ...])
             
-        # Split into train/test
+
+        # Shuffle the index deterministically (based on the number of examples)
         self.shuffle_idx = list(range(len(self.all_points)))
         random.Random(38383).shuffle(self.shuffle_idx)
-        
-        train_size = int(0.7 * len(self.all_points))
-        test_size = len(self.all_points) - train_size
-      
-        if split == 'train':
-            self.all_points = self.all_points[:train_size]
-            print("train")
-        else:
-            self.all_points = self.all_points[train_size:]
-            print("val")
+        self.all_points = [self.all_points[i] for i in self.shuffle_idx]
 
         # Normalization
         self.all_points = np.concatenate(self.all_points)  # (N, 15000, 3)
@@ -137,15 +128,12 @@ class BuildingNetPC(Dataset):
         te_out = torch.from_numpy(te_out[te_idxs, :]).float()
 
         m, s = self.get_pc_stats(idx)
-        cate_idx = self.cate_idx_lst[idx]
-        sid, mid = self.all_cate_mids[idx]
 
         out = {
             'idx': idx,
             'train_points': tr_out,
             'test_points': te_out,
-            'mean': m, 'std': s, 'cate_idx': cate_idx,
-            'sid': sid, 'mid': mid
+            'mean': m, 'std': s
         }
 
         return out
