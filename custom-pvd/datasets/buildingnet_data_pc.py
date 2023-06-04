@@ -10,7 +10,7 @@ import torch.nn.functional as F
 
 
 class BuildingNetPC(Dataset):
-    def __init__(self, root_dir, subdirs, tr_sample_size=10000, category='RESIDENTIALhouse'
+    def __init__(self, root_dir, tr_sample_size=10000, category='RESIDENTIALhouse',
                  te_sample_size=10000, split='train', scale=1.,
                  normalize_per_shape=False, box_per_shape=False,
                  random_subsample=False,
@@ -21,16 +21,16 @@ class BuildingNetPC(Dataset):
         self.split = split
         self.in_tr_sample_size = tr_sample_size
         self.in_te_sample_size = te_sample_size
-        self.subdirs = subdirs
+        self.box_per_shape = box_per_shape
         self.scale = scale
         self.random_subsample = random_subsample
         self.input_dim = input_dim
 
         # get files
-
+        self.all_points = []
         data_path = os.path.join(root_dir, category)
         
-        for idx, file in os.listdir                                         (data_path):
+        for idx, file in enumerate(os.listdir(data_path)):
             if not file.endswith(".npy"):
                 continue
             obj_fname = os.path.join(data_path, file)
@@ -39,20 +39,29 @@ class BuildingNetPC(Dataset):
                 point_cloud = np.load(obj_fname) # (2048, 3)
             except:
                 continue
-
-            assert point_cloud.shape[0] == 2048
+            ##print("pc shape", point_cloud.shape[0])
+            if point_cloud.shape[0] != 2048:
+            	continue
             self.all_points.append(point_cloud[np.newaxis, ...])
             
         # Split into train/test
-        generator1 = torch.Generator().manual_seed(42)
-        split = random_split(self.all_points, [0.7, 0.3], generator=generator1)
-        if split = 'train':
-            self.all_points = split[0]
+        self.shuffle_idx = list(range(len(self.all_points)))
+        random.Random(38383).shuffle(self.shuffle_idx)
+        
+        train_size = int(0.7 * len(self.all_points))
+        test_size = len(self.all_points) - train_size
+      
+        if split == 'train':
+            self.all_points = self.all_points[:train_size]
+            print("train")
         else:
-            self.all_points = split[1]
+            self.all_points = self.all_points[train_size:]
+            print("val")
 
         # Normalization
         self.all_points = np.concatenate(self.all_points)  # (N, 15000, 3)
+        
+        print("self.all_points", self.all_points.shape)
         self.normalize_per_shape = normalize_per_shape
         self.normalize_std_per_axis = normalize_std_per_axis
         if all_points_mean is not None and all_points_std is not None:  # using loaded dataset stats
@@ -112,6 +121,7 @@ class BuildingNetPC(Dataset):
 
     def __getitem__(self, idx):
         tr_out = self.train_points[idx]
+        print("tr_out", tr_out.shape)
         if self.random_subsample:
             tr_idxs = np.random.choice(tr_out.shape[0], self.tr_sample_size)
         else:
@@ -119,6 +129,7 @@ class BuildingNetPC(Dataset):
         tr_out = torch.from_numpy(tr_out[tr_idxs, :]).float()
 
         te_out = self.test_points[idx]
+        print("te_out", te_out.shape)
         if self.random_subsample:
             te_idxs = np.random.choice(te_out.shape[0], self.te_sample_size)
         else:

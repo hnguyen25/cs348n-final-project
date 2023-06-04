@@ -496,7 +496,7 @@ def get_dataset(dataroot, npoints,category):
         normalize_std_per_axis=False,
         random_subsample=True)
     te_dataset = BuildingNetPC(root_dir=dataroot,
-        category=category, split='val',
+        categories=[category], split='val',
         tr_sample_size=npoints,
         te_sample_size=npoints,
         scale=1.,

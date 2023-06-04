@@ -496,7 +496,7 @@ def get_dataset(dataroot, npoints,category):
         normalize_std_per_axis=False,
         random_subsample=True)
     te_dataset = BuildingNetPC(root_dir=dataroot,
-        category=category, split='val',
+        categories=[category], split='val',
         tr_sample_size=npoints,
         te_sample_size=npoints,
         scale=1.,
@@ -807,7 +807,7 @@ def main():
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', default='../data/BuildingNet/processed/method_voxeldownsample')
+    parser.add_argument('--dataroot', default='data/BuildingNet/processed/method_voxeldownsample')
     parser.add_argument('--category', default='RESIDENTIALhouse')
 
     parser.add_argument('--bs', type=int, default=16, help='input batch size')
