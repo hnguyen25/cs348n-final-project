@@ -36,7 +36,7 @@ class BuildingNetPC(Dataset):
             obj_fname = os.path.join(data_path, file)
         
             try:
-                point_cloud = np.load(obj_fname) # (15000, 3)
+                point_cloud = np.load(obj_fname) # (15000, 3 or 6)
             except:
                 continue
             ##print("pc shape", point_cloud.shape[0])
@@ -51,7 +51,7 @@ class BuildingNetPC(Dataset):
         self.all_points = [self.all_points[i] for i in self.shuffle_idx]
 
         # Normalization
-        self.all_points = np.concatenate(self.all_points)  # (N, 15000, 3)
+        self.all_points = np.concatenate(self.all_points)  # (N, 15000, 3 or 6)
         
         print("self.all_points", self.all_points.shape)
         self.normalize_per_shape = normalize_per_shape
@@ -60,6 +60,7 @@ class BuildingNetPC(Dataset):
             self.all_points_mean = all_points_mean
             self.all_points_std = all_points_std
         elif self.normalize_per_shape:  # per shape normalization
+            print('per shape normalization')
             B, N = self.all_points.shape[:2]
             self.all_points_mean = self.all_points.mean(axis=1).reshape(B, 1, input_dim)
             if normalize_std_per_axis:
@@ -73,13 +74,14 @@ class BuildingNetPC(Dataset):
             self.all_points_std = self.all_points.max(axis=1).reshape(B, 1, input_dim) - self.all_points.min(axis=1).reshape(B, 1, input_dim)
 
         else:  # normalize across the dataset
+     
             self.all_points_mean = self.all_points.reshape(-1, input_dim).mean(axis=0).reshape(1, 1, input_dim)
             if normalize_std_per_axis:
                 self.all_points_std = self.all_points.reshape(-1, input_dim).std(axis=0).reshape(1, 1, input_dim)
             else:
                 self.all_points_std = self.all_points.reshape(-1).std(axis=0).reshape(1, 1, 1)
-
-        self.all_points = (self.all_points - self.all_points_mean) / self.all_points_std
+        print("self.all_points_mean", self.all_points_mean.shape, "std", self.all_points_std.shape)
+        self.all_points[:,:,:3] = (self.all_points[:,:,:3] - self.all_points_mean) / self.all_points_std
         if self.box_per_shape:
             self.all_points = self.all_points - 0.5
         self.train_points = self.all_points[:, :10000]

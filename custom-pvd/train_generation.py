@@ -807,14 +807,14 @@ def main():
 def parse_args():
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dataroot', default='../data/BuildingNet/processed/method_voxeldownsample')
+    parser.add_argument('--dataroot', default='../data/BuildingNet/processed/method_randomdownsampling_labels')
     parser.add_argument('--category', default='RESIDENTIALhouse')
 
     parser.add_argument('--bs', type=int, default=16, help='input batch size')
     parser.add_argument('--workers', type=int, default=16, help='workers')
     parser.add_argument('--niter', type=int, default=10000, help='number of epochs to train for')
 
-    parser.add_argument('--nc', default=3)
+    parser.add_argument('--nc', default=6)
     parser.add_argument('--npoints', default=2048)
     '''model'''
     parser.add_argument('--beta_start', default=0.0001)
