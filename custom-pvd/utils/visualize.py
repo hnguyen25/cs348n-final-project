@@ -196,6 +196,10 @@ def visualize_pointcloud_batch(path, pointclouds, pred_labels, labels, categorie
             colour = target[idx]
         pc = pc.cpu().numpy()
         ax = fig.add_subplot(nrows, ncols, idx + 1, projection='3d')
+        # add to extra custom dim for rgb labelling
+        colour = pc[:,3:]
+        # normalize to (0,1)
+        colour = (colour-np.min(colour))/(np.max(colour)-np.min(colour))
         ax.scatter(pc[:, 0], pc[:, 2], pc[:, 1], c=colour, s=5)
         ax.view_init(elev=elev, azim=azim)
         ax.axis('off')
